@@ -1,6 +1,6 @@
 
 from dataclasses import dataclass
-import requests
+import httpx
 from schema import GoogleUserDataSchema
 
 from settings import Settings
@@ -9,18 +9,21 @@ from settings import Settings
 @dataclass
 class GoogleClient:
     settings: Settings
+    async_client: httpx.AsyncClient
 
-    def get_user_info(self, code: str) -> dict:
-        access_token = self._get_access_token(code=code)
-        user_info = requests.get(
-            url="https://www.googleapis.com/oauth2/v1/userinfo",
-            headers={"Authorization": f"Bearer {access_token}"}
-        )
+    async def get_user_info(self, code: str) -> dict:
+        access_token = await self._get_access_token(code=code)
+        
+        async with self.async_client as client:
+            user_info = await client.get(
+                url="https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {access_token}"}
+            )
 
         return GoogleUserDataSchema(**user_info.json(), access_token=access_token)
 
 
-    def _get_access_token(self, code: str) -> str:
+    async def _get_access_token(self, code: str) -> str:
         data = {
             'code': code,
             'client_id': self.settings.GOOGLE_CLIENT_ID,
@@ -29,9 +32,13 @@ class GoogleClient:
             'grant_type': 'authorization_code'
         }
 
-        response = requests.post(
-            self.settings.GOOGLE_TOKEN_URI,
-            data=data
-        )
+        async with self.async_client as client:
+            response = await client.post(
+                self.settings.GOOGLE_TOKEN_URI,
+                data=data
+            )
 
-        return response.json()['access_token']
+            print(response)
+
+        return response
+

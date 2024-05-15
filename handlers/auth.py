@@ -46,7 +46,7 @@ async def google_auth(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
     code: str
 ):
-    return auth_service.google_auth(code=code)
+    return await auth_service.google_auth(code=code)
 
 
 @router.get(
@@ -68,4 +68,4 @@ async def yandex_auth(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
     code: str
 ):
-    return auth_service.yandex_auth(code=code)
+    return await auth_service.yandex_auth(code=code)

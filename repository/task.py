@@ -1,65 +1,60 @@
-from sqlalchemy import select, update, delete
-from sqlalchemy.orm import Session
+from sqlalchemy import select, update, delete, insert
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from models import Task, Category
-from schema import TaskSchema
-from database import get_db_session
 from schema.task import TaskCreateSchema
 
-class TaskRepository():
+class TaskRepository:
 
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: AsyncSession):
         self.db_session = db_session
 
-
-    def get_tasks(self):
+    async def get_tasks(self):
         query = select(Task)
 
-        with self.db_session() as session:
-            tasks: list[Task] = session.execute(query).scalars().all()
+        async with self.db_session as session:
+            tasks: list[Task] = (await session.execute(query)).scalars().all()
 
         return tasks
 
 
-    def get_task(self, task_id: int) -> Task | None:
+    async def get_task(self, task_id: int) -> Task | None:
         query = select(Task).where(Task.id == task_id)
 
-        with self.db_session() as session:
-            task: Task = session.execute(query).scalar_one_or_none()
+        async with self.db_session as session:
+            task: Task = (await session.execute(query)).scalar_one_or_none()
 
         return task
     
-    def get_user_task(self, user_id: int, task_id: int) -> Task | None:
+    async def get_user_task(self, user_id: int, task_id: int) -> Task | None:
         query = select(Task).where(Task.user_id == user_id, Task.id == task_id)
 
-        with self.db_session() as session:
-            task: Task = session.execute(query).scalar_one_or_none()
+        async with self.db_session as session:
+            task: Task = (await session.execute(query)).scalar_one_or_none()
 
         return task
 
     
 
-    def create_task(self, task: TaskCreateSchema, user_id: int) -> int:
-        task_model = Task(
-            name = task.name,
-            pomodoro_count = task.pomodoro_count,
-            category_id = task.category_id,
-            user_id = user_id
-        )
-
-        with self.db_session() as session:
-            session.add(task_model)
-            session.commit()
-
-            return task_model.id
+    async def create_task(self, task: TaskCreateSchema, user_id: int) -> int:
+        query = insert(Task).values(
+            name=task.name,
+            pomodoro_count=task.pomodoro_count,
+            category_id=task.category_id,
+            user_id=user_id).returning(Task.id)
+        
+        async with self.db_session as session:
+            task_id = (await session.execute(query)).scalar_one_or_none()
+            await session.commit()
+            return task_id
 
 
-    def delete_task(self, task_id: int) -> None:
+    async def delete_task(self, task_id: int) -> None:
         query = delete(Task).where(Task.id == task_id)
 
-        with self.db_session() as session:
-            session.execute(query)
-            session.commit()
+        async with self.db_session as session:
+            await session.execute(query)
+            await session.commit()
 
 
     def get_task_by_category_id(self, category_name: int) -> list[Task] | None:
@@ -71,12 +66,12 @@ class TaskRepository():
         return tasks
     
 
-    def update_name(self, task_id: int, name: str) -> Task:
+    async def update_name(self, task_id: int, name: str) -> Task:
         query = update(Task).where(Task.id == task_id).values(name=name).returning(Task.id)
         
-        with self.db_session() as session:
-            task_id: int = session.execute(query).scalar_one_or_none()
-            session.commit()
+        async with self.db_session as session:
+            task_id: int = (await session.execute(query)).scalar_one_or_none()
+            await session.commit()
 
-            return self.get_task(task_id)
+            return await self.get_task(task_id)
 

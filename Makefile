@@ -2,7 +2,7 @@
 
 run: ## start server
 	docker-compose up -d
-	poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload --env-file .local.env
+	poetry run gunicorn main:app --worker-class uvicorn.workers.UvicornWorker -c infra/gunicorn.conf.py
 
 add:
 	poetry add $(LIBRARY)
