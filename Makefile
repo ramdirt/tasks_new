@@ -2,7 +2,7 @@
 
 run: ## start server
 	docker-compose up -d
-	poetry run gunicorn main:app --worker-class uvicorn.workers.UvicornWorker -c infra/gunicorn.conf.py
+	poetry run gunicorn app.main:app --worker-class uvicorn.workers.UvicornWorker -c app/infrastructure/gunicorn.conf.py
 
 add:
 	poetry add $(LIBRARY)
