@@ -1,8 +1,8 @@
 from sqlalchemy import select, update, delete, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Task, Category
-from app.schema.task import TaskCreateSchema
+from app.tasks.models import Task
+from app.tasks.schema import TaskCreateSchema
 
 class TaskRepository:
 
@@ -57,13 +57,13 @@ class TaskRepository:
             await session.commit()
 
 
-    def get_task_by_category_id(self, category_name: int) -> list[Task] | None:
-        query = select(Task).join(Category, Task.category_id == Category.id).where(Task.category_name == category_name)
+    # def get_task_by_category_id(self, category_name: int) -> list[Task] | None:
+    #     query = select(Task).join(Category, Task.category_id == Category.id).where(Task.category_name == category_name)
 
-        with self.db_session() as session:
-            tasks: list[Task] = session.execute(query).scalars().all()
+    #     with self.db_session() as session:
+    #         tasks: list[Task] = session.execute(query).scalars().all()
 
-        return tasks
+    #     return tasks
     
 
     async def update_name(self, task_id: int, name: str) -> Task:

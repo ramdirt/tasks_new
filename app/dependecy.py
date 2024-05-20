@@ -1,10 +1,17 @@
-from app.clients import GoogleClient, YandexClient
+from app.users.auth.clients import GoogleClient, YandexClient
 from app.exception import TokenExpireException, TokenNotCorrectException
-from fastapi import Depends, Request, security, Security, HTTPException, status
+from fastapi import Depends, security, Security, HTTPException, status
 from app.infrastructure.database import get_db_session
 from app.infrastructure.cache import get_redis_connection
-from app.repository import TaskRepository, TaskCache, UserRepository
-from app.service import TaskService, UserService, AuthService
+from app.tasks.repositories import TaskRepository, TaskCache
+from app.users.user.repository import UserRepository
+
+
+from app.tasks.service import TaskService
+from app.users.user.service import UserService
+from app.users.auth.service import AuthService
+
+
 from sqlalchemy.ext.asyncio import AsyncSession
 import httpx
 

@@ -28,3 +28,6 @@ migrate-reset:
 migrate-restart:
 	make migrate-reset
 	make migrate-apply
+
+test:
+	poetry run pytest tests

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from app.models import User
+from app.users.user.models import User
 from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schema import UserCreateSchema
+from app.users.user.schema import UserCreateSchema
 
 @dataclass
 class UserRepository:

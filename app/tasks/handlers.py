@@ -3,7 +3,7 @@ from app.exception import TaskNotFoundException
 from fastapi import APIRouter, status, Depends, HTTPException
 
 from app.dependecy import get_task_service, get_request_user_id
-from app.schema import TaskSchema, TaskCreateSchema
+from app.tasks.schema import TaskSchema, TaskCreateSchema
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
